@@ -1,0 +1,10 @@
+{
+  "name": "@cognis/jwtinspect",
+  "version": "0.2.0",
+  "description": "JavaScript port of jwtinspect (Cognis Neural Suite)",
+  "bin": {
+    "jwtinspect": "index.js"
+  },
+  "license": "LicenseRef-COCL-1.0",
+  "type": "module"
+}
