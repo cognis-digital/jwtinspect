@@ -1,30 +1,11 @@
-"""JWTINSPECT - Decode JWTs and lint for common security weaknesses.
-
-Defensive / authorized-testing tool. Analysis, triage and detection only:
-it decodes tokens and lints headers/claims for misconfigurations such as
-``alg=none``, weak HMAC secrets (dictionary check against a supplied or
-built-in list), and missing/insecure standard claims. It performs NO
-attack, forging, or unauthorized signing of tokens.
-"""
-from .core import (
-    Finding,
-    InspectionResult,
-    Severity,
-    decode_segment,
-    inspect_token,
-    lint_token,
-)
-
-TOOL_NAME = "jwtinspect"
-TOOL_VERSION = "1.0.0"
-
-__all__ = [
-    "TOOL_NAME",
-    "TOOL_VERSION",
-    "Finding",
-    "InspectionResult",
-    "Severity",
-    "decode_segment",
-    "inspect_token",
-    "lint_token",
-]
+"""jwtinspect — part of the Cognis Neural Suite."""
+try:  # re-export the tool's public API + identity from core
+    from jwtinspect.core import *  # noqa: F401,F403
+except Exception:  # pragma: no cover
+    pass
+try:
+    from jwtinspect.core import TOOL_NAME, TOOL_VERSION
+except Exception:  # pragma: no cover
+    TOOL_NAME = "jwtinspect"
+    TOOL_VERSION = "0.1.0"
+__version__ = TOOL_VERSION
