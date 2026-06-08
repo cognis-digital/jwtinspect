@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: jwtinspect, labels: { app: jwtinspect } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: jwtinspect } }
+  template:
+    metadata: { labels: { app: jwtinspect } }
+    spec:
+      containers:
+        - name: jwtinspect
+          image: ghcr.io/cognis-digital/jwtinspect:latest
+          ports: [{ containerPort: 8000 }]
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: jwtinspect }
+spec:
+  selector: { app: jwtinspect }
+  ports: [{ port: 80, targetPort: 8000 }]
