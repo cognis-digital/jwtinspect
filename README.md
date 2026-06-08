@@ -36,9 +36,9 @@ JWT vuln linter in CI
 <a name="features"></a>
 ## Features
 
-- ✅ Todo
-- ✅ Fixme
-- ✅ Xxx
+- ✅ Decode Segment
+- ✅ Lint Token
+- ✅ Inspect Token
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
