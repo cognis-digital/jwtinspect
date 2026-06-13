@@ -20,6 +20,32 @@ pip install cognis-jwtinspect
 jwtinspect scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+`jwtinspect` decodes a JWT and lints it for `alg=none`, weak HMAC secrets, and
+missing/expired claims. Single subcommand: `inspect`.
+
+```bash
+# 1. Install
+pip install -e .
+
+# 2. Inspect a token (positional, from a file, or piped on stdin)
+jwtinspect inspect "eyJhbGciOi..."
+jwtinspect inspect --file token.txt
+echo "$JWT" | jwtinspect inspect
+
+# 3. Tighten the lint: require claims, cap lifetime, test weak secrets
+jwtinspect inspect --file token.txt \
+  --require sub --require exp --max-lifetime 3600 --wordlist weak-secrets.txt
+
+# 4. Read the result as JSON (decoded header/payload + findings)
+jwtinspect inspect --file token.txt --format json > jwt-report.json
+
+# 5. CI gate — fail when a token has lint findings
+jwtinspect inspect --file token.txt || exit 1
+```
+
+
 ## Contents
 
 - [Why jwtinspect?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
