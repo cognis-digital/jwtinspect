@@ -22,29 +22,44 @@ jwtinspect scan .            # → prioritized findings in seconds
 
 ## Usage — step by step
 
-`jwtinspect` decodes a JWT and lints it for `alg=none`, weak HMAC secrets, and
-missing/expired claims. Single subcommand: `inspect`.
+> Defensive / authorized testing only.
 
-```bash
-# 1. Install
-pip install -e .
+1. **Install:**
 
-# 2. Inspect a token (positional, from a file, or piped on stdin)
-jwtinspect inspect "eyJhbGciOi..."
-jwtinspect inspect --file token.txt
-echo "$JWT" | jwtinspect inspect
+   ```bash
+   pip install jwtinspect
+   ```
 
-# 3. Tighten the lint: require claims, cap lifetime, test weak secrets
-jwtinspect inspect --file token.txt \
-  --require sub --require exp --max-lifetime 3600 --wordlist weak-secrets.txt
+2. **Inspect a token** — pass it as an argument, via `--file`, or on stdin:
 
-# 4. Read the result as JSON (decoded header/payload + findings)
-jwtinspect inspect --file token.txt --format json > jwt-report.json
+   ```bash
+   jwtinspect inspect eyJhbGciOi...
+   jwtinspect inspect --file token.txt
+   cat token.txt | jwtinspect inspect
+   ```
 
-# 5. CI gate — fail when a token has lint findings
-jwtinspect inspect --file token.txt || exit 1
-```
+   The report shows alg/typ, signature presence, claims, and lint findings (e.g. `alg=none`).
 
+3. **Tighten the checks** — require claims, cap token lifetime, and confirm weak HMAC secrets with a wordlist:
+
+   ```bash
+   jwtinspect inspect --file token.txt \
+     --require exp --require aud \
+     --max-lifetime 3600 \
+     --wordlist weak-secrets.txt
+   ```
+
+4. **Read the result in CI** — emit JSON and rely on the exit code (0 = nothing at/above medium, 1 = medium-or-worse finding, 2 = usage error):
+
+   ```bash
+   jwtinspect --format json inspect --file token.txt | jq '.max_severity'
+   ```
+
+5. **CI gate:**
+
+   ```bash
+   jwtinspect inspect --file token.txt --require exp || echo "JWT failed policy"
+   ```
 
 ## Contents
 
