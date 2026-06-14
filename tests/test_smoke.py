@@ -6,6 +6,7 @@ import io
 import json
 import os
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -136,6 +137,55 @@ class TestCLI(unittest.TestCase):
         code, _, err = self._run(["inspect", "garbage"])
         self.assertEqual(code, 2)
         self.assertIn("not a valid JWT", err)
+
+    def test_missing_file_exit_two(self):
+        """--file pointing to a non-existent path should exit 2 with a clear error."""
+        code, _, err = self._run(["inspect", "--file", "/nonexistent/path/token.jwt"])
+        self.assertEqual(code, 2)
+        self.assertIn("error", err.lower())
+
+    def test_empty_token_file_exit_two(self):
+        """An empty token file should exit 2 with a clear error."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jwt", delete=False) as tf:
+            tf.write("   \n")
+            tmp_path = tf.name
+        try:
+            code, _, err = self._run(["inspect", "--file", tmp_path])
+            self.assertEqual(code, 2)
+            self.assertIn("error", err.lower())
+        finally:
+            os.unlink(tmp_path)
+
+    def test_negative_max_lifetime_exit_two(self):
+        """--max-lifetime with a non-positive value should exit 2."""
+        tok = make_token({"alg": "HS256"}, {"sub": "1", "exp": 9999999999, "iat": 1},
+                         secret="a-very-long-high-entropy-random-secret-9f8e7d6c")
+        code, _, err = self._run(["inspect", tok, "--max-lifetime", "-60"])
+        self.assertEqual(code, 2)
+        self.assertIn("max-lifetime", err)
+
+    def test_empty_token_string_raises_format_error(self):
+        """inspect_token on an empty string must raise JWTFormatError."""
+        from jwtinspect.core import JWTFormatError
+        with self.assertRaises(JWTFormatError):
+            inspect_token("")
+        with self.assertRaises(JWTFormatError):
+            inspect_token("   ")
+
+    def test_wordlist_file_not_found_exit_two(self):
+        """--wordlist pointing to a missing file should exit 2."""
+        tok = make_token({"alg": "HS256"}, {"sub": "1", "exp": 9999999999, "iat": 1},
+                         secret="a-very-long-high-entropy-random-secret-9f8e7d6c")
+        code, _, err = self._run(["inspect", tok, "--wordlist", "/no/such/file.txt"])
+        self.assertEqual(code, 2)
+        self.assertIn("wordlist", err.lower())
+
+    def test_mcp_server_compiles(self):
+        """mcp_server module must import cleanly (no broken references)."""
+        import importlib
+        import jwtinspect.mcp_server  # noqa: F401
+        # Re-import to exercise the module-level code path
+        importlib.reload(jwtinspect.mcp_server)
 
 
 if __name__ == "__main__":

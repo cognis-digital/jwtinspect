@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from typing import List, Optional
 
@@ -25,10 +26,20 @@ from .core import SEVERITY_ORDER, JWTFormatError, inspect_token
 
 def _read_token(args: argparse.Namespace) -> str:
     if args.token:
-        return args.token
+        token = args.token.strip()
+        if not token:
+            raise ValueError("token argument is empty")
+        return token
     if args.file:
+        if not os.path.exists(args.file):
+            raise FileNotFoundError(f"token file not found: {args.file!r}")
+        if not os.path.isfile(args.file):
+            raise ValueError(f"not a regular file: {args.file!r}")
         with open(args.file, "r", encoding="utf-8") as fh:
-            return fh.read().strip()
+            token = fh.read().strip()
+        if not token:
+            raise ValueError(f"token file is empty: {args.file!r}")
+        return token
     data = sys.stdin.read().strip()
     if not data:
         raise ValueError("no token provided (argument, --file, or stdin)")
@@ -38,8 +49,15 @@ def _read_token(args: argparse.Namespace) -> str:
 def _load_wordlist(path: Optional[str]) -> Optional[List[str]]:
     if not path:
         return None
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"wordlist file not found: {path!r}")
+    if not os.path.isfile(path):
+        raise ValueError(f"wordlist path is not a regular file: {path!r}")
     with open(path, "r", encoding="utf-8") as fh:
-        return [line.strip() for line in fh if line.strip()]
+        words = [line.strip() for line in fh if line.strip()]
+    if not words:
+        raise ValueError(f"wordlist file is empty: {path!r}")
+    return words
 
 
 def _render_table(result, stream) -> None:
@@ -126,6 +144,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         parser.error("unknown command")
         return 2
 
+    if args.max_lifetime is not None and args.max_lifetime <= 0:
+        print("error: --max-lifetime must be a positive integer", file=sys.stderr)
+        return 2
+
     try:
         token = _read_token(args)
     except (OSError, ValueError) as exc:
@@ -134,7 +156,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     try:
         wordlist = _load_wordlist(args.wordlist)
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
         print(f"error: cannot read wordlist: {exc}", file=sys.stderr)
         return 2
 

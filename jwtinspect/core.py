@@ -127,7 +127,11 @@ def decode_segment(segment: str) -> Dict[str, Any]:
 
 
 def _split(token: str):
+    if not isinstance(token, str):
+        raise JWTFormatError("token must be a string")
     token = token.strip()
+    if not token:
+        raise JWTFormatError("token is empty")
     parts = token.split(".")
     if len(parts) not in (2, 3):
         raise JWTFormatError(
@@ -161,7 +165,12 @@ def _try_crack_hmac(
         return None
     signing_input = (header_b64 + "." + payload_b64).encode("ascii")
     for candidate in wordlist:
-        mac = hmac.new(candidate.encode("utf-8"), signing_input, hash_alg).digest()
+        if not isinstance(candidate, str):
+            continue
+        try:
+            mac = hmac.new(candidate.encode("utf-8"), signing_input, hash_alg).digest()
+        except (TypeError, ValueError):
+            continue
         if hmac.compare_digest(mac, expected):
             return candidate
     return None
