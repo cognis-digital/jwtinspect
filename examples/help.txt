@@ -1,0 +1,16 @@
+$ jwtinspect-emit --help
+
+usage: jwtinspect [-h] [--version] [--format {table,json}] {inspect} ...
+
+Decode JWTs and lint for alg=none, weak secrets, and missing claims (defensive
+/ authorized testing only).
+
+positional arguments:
+  {inspect}
+    inspect             decode + lint a JWT
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json}
+                        output format (default: table)

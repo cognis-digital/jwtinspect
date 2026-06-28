@@ -1,0 +1,3 @@
+$ jwtinspect-emit --version
+
+jwtinspect 0.1.0

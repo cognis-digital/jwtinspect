@@ -20,6 +20,69 @@ pip install cognis-jwtinspect
 jwtinspect scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ jwtinspect-emit --version
+jwtinspect 0.1.0
+```
+
+```console
+$ jwtinspect-emit --help
+usage: jwtinspect [-h] [--version] [--format {table,json}] {inspect} ...
+
+Decode JWTs and lint for alg=none, weak secrets, and missing claims (defensive
+/ authorized testing only).
+
+positional arguments:
+  {inspect}
+    inspect             decode + lint a JWT
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --format {table,json}
+                        output format (default: table)
+```
+
+> Blocks above are real `jwtinspect` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"findings": [
+    {
+        "id": "1234567890",
+        "title": "Suspicious Activity Detected",
+        "description": "An unknown actor has accessed our network.",
+        "created_by": "John Doe",
+        "created_at": "2023-02-20T14:30:00Z",
+        "updated_at": "2023-02-20T14:30:00Z",
+        "labels": ["suspicious", "network"],
+        "objects": [
+            {
+                "id": "object_1",
+                "type": "ip",
+                "value": "192.168.1.100"
+            },
+            {
+                "id": "object_2",
+                "type": "domain",
+                "value": "example.com"
+            }
+        ]
+    }
+]
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 > Defensive / authorized testing only.
